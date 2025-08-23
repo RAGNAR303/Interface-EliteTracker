@@ -1,0 +1,29 @@
+.container {
+  width: 80%;
+  background-color: var(--info);
+  padding: 10px;
+  border-radius: 5px;
+  color: var(--white);
+  font-size: 25px;
+  font-weight: 300;
+  border: none;
+  box-shadow: 0 4px 20px var(--shadow);
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container:hover {
+  background-color: var(--info-hover);
+  transform: scale(1.02);
+}
+
+.container:active {
+  background-color: var(--info-active);
+}
+.container svg {
+  width: 27px;
+  height: 27px;
+  margin-right: 5px;
+}

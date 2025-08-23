@@ -1,0 +1,47 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+  height: 100%;
+  background-color: var(--black-blue);
+  padding: 15px 0;
+}
+
+.container img {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  box-shadow: 0px 2px 2px var(--shadow);
+}
+
+.container .links {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100px;
+}
+
+.container .links svg {
+  fill: var(--white);
+  height: 40px;
+  width: 40px;
+  cursor: pointer;
+  transition: 0.2s ease-in;
+}
+
+.container .links svg:hover {
+  fill: var(--info);
+}
+
+.signout {
+  height: 40px;
+  width: 40px;
+  fill: var(--error-hover);
+  margin-top: auto;
+}
+
+.signout:hover {
+  fill: var(--error);
+}

@@ -84,6 +84,11 @@
   width: 5px;
   border-radius: 5px;
   background-color: var(--dark-light-blue);
+  transition: 0.4s ease-in-out;
+}
+
+.content section .habits::-webkit-scrollbar-thumb:hover {
+  background-color: var(--info);
 }
 
 .content section .habits .habit {
@@ -104,20 +109,49 @@
   display: flex;
   justify-content: space-between;
 }
-
-.content section .habits .habit .action input {
+.content section .habits .habit .action input[type="checkbox"] {
   width: 20px;
   height: 20px;
+  display: none;
   cursor: pointer;
 }
 
-.content section .habits .habit .action svg {
+.action label {
+  position: relative;
+}
+
+.action label .check {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: 2px solid var(--dark-light-blue);
+  background-color: var(--white);
+}
+
+.check > .checked {
+  display: none;
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  margin-left: -2px;
+  margin-top: -2px;
+  fill: var(--info);
+}
+
+.action input[type="checkbox"]:checked + .check .checked {
+  display: inline;
+}
+
+.content section .habits .habit .action > svg {
   width: 20px;
   height: 20px;
   transition: 0.2s ease-in-out;
   cursor: pointer;
 }
 
-.content section .habits .habit .action svg:hover {
+.content section .habits .habit .action > svg:hover {
   fill: var(--error);
 }

@@ -1,4 +1,4 @@
-import { NotePencilIcon, TrashSimpleIcon } from "@phosphor-icons/react";
+import { CheckCircleIcon, NotePencilIcon, TrashSimpleIcon } from "@phosphor-icons/react";
 import style from "./style.module.css";
 import { SideBar } from "../../components/sidebar";
 
@@ -26,8 +26,13 @@ export function Habits() {
                   <div key={index} className={style.habit}>
                     <p>Estudar Programação</p>
                     <div className={style.action}>
-                      <input type="checkbox" name="" id="" />
-                      <TrashSimpleIcon />
+                      <label>
+                        <input type="checkbox" />
+                        <span className={style.check}>
+                          <CheckCircleIcon  className={style.checked} weight="fill" />
+                        </span>
+                      </label>
+                     <TrashSimpleIcon weight="duotone" />
                     </div>
                   </div>
                 ))}

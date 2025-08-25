@@ -24,7 +24,7 @@ export function Habits() {
                 .fill(1)
                 .map((_, index) => (
                   <div key={index} className={style.habit}>
-                    <p>Estudar Programação</p>
+                    <p>Estudar Programação {index}</p>
                     <div className={style.action}>
                       <label>
                         <input type="checkbox" />
@@ -39,7 +39,7 @@ export function Habits() {
             </div>
           </section>
         </div>
-      </div>
+      </div> 
     </div>
   );
 }

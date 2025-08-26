@@ -1,11 +1,24 @@
 import { ListChecksIcon, SignOutIcon, TimerIcon } from "@phosphor-icons/react";
 import style from "./style.module.css";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useUser } from "../../hooks/use.user";
 
 export function SideBar() {
+  const { userData, logout } = useUser();
+
+  const navigate = useNavigate();
+
+
+
+  function handleLogout() {
+    logout();
+
+    navigate("/entrar");
+  }
+
   return (
     <div className={style.container}>
-      <img src="https://github.com/RAGNAR303.png" alt="img-perfil" />
+      <img src={userData.avatarUrl} alt="img-perfil" />
       <div className={style.links}>
         <Link to={"/habitos"}>
           <ListChecksIcon />
@@ -14,7 +27,7 @@ export function SideBar() {
           <TimerIcon />
         </Link>
       </div>
-      <SignOutIcon className={style.signout} />
+      <SignOutIcon onClick={handleLogout} className={style.signout} />
     </div>
   );
 }

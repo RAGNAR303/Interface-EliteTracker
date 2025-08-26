@@ -12,13 +12,14 @@ export type UserData = {
 type UserContextProps = {
   getUserInfo: (githubCode: string) => Promise<void>;
   userData: UserData;
+  logout: () => void;
 };
 
 type UserProviderProps = {
   children: ReactNode;
 };
 
- export const useLocalStorageKey = `${import.meta.env.VITE_LOCALSTORAGE_KEY}:useData`;
+export const useLocalStorageKey = `${import.meta.env.VITE_LOCALSTORAGE_KEY}:useData`;
 
 const UserContext = createContext<UserContextProps>({} as UserContextProps);
 
@@ -55,7 +56,17 @@ export function UserProvider({ children }: UserProviderProps) {
     loadUserData();
   }, []);
 
-  return <UserContext.Provider value={{ userData, getUserInfo }}>{children}</UserContext.Provider>;
+  async function logout() {
+    setUserData({} as UserData);
+
+    localStorage.removeItem(useLocalStorageKey);
+  }
+
+  return (
+    <UserContext.Provider value={{ userData, getUserInfo, logout }}>
+      {children}
+    </UserContext.Provider>
+  );
 }
 
 export function useUser() {

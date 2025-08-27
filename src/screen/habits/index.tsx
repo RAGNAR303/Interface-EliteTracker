@@ -3,6 +3,7 @@ import style from "./style.module.css";
 import { SideBar } from "../../components/sidebar";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../services/api";
+import dayjs from "dayjs";
 
 type Habits = {
   _id: string;
@@ -15,8 +16,12 @@ type Habits = {
 
 export function Habits() {
   const [habits, setHabits] = useState<Habits[]>([]);
-
   const createHabits = useRef<HTMLInputElement>(null);
+
+  // pega o dias atual
+  const today = dayjs().startOf("day").toISOString();
+
+ 
 
   async function loadHabits() {
     const { data } = await api.get<Habits[]>("/habits");
@@ -34,17 +39,23 @@ export function Habits() {
     // Pega o valor do input , que e o Habitos criado
     if (addhabit) {
       await api.post("/habits", { name: addhabit });
-      loadHabits();
+      await loadHabits();
     }
     // Zera o valor do input depois.
     if (createHabits.current) {
       createHabits.current.value = "";
     }
   }
-
-  // async function deleteHabits(id) {
-  //   await api.delete(`/habits/${id}`);
-  // }
+// Marca e desmarcar com base no dias
+  async function handleToggle(id: string) {
+    await api.patch(`/habits/${id}/toggle`);
+    await loadHabits();
+  }
+//  Deleta a habitos
+  async function deleteHabits(id: string) {
+    await api.delete(`/habits/${id}`);
+    await loadHabits();
+  }
 
   return (
     <div className={style.screen}>
@@ -67,7 +78,7 @@ export function Habits() {
               <input
                 type="text"
                 ref={createHabits}
-                placeholder="Digite aqui uma nova atividade..."
+                placeholder="Digite aqui uma nova hábito..."
               />
               <NotePencilIcon onClick={handleSubmit} />
             </div>
@@ -77,16 +88,16 @@ export function Habits() {
                   <p>{item.name}</p>
                   <div className={style.action}>
                     <label>
-                      <input type="checkbox" />
+                      <input
+                        type="checkbox"
+                        checked={item.completedDates.some((item) => item === today)}
+                        onChange={() => handleToggle(item._id)}
+                      />
                       <span className={style.check}>
                         <CheckCircleIcon className={style.checked} weight="fill" />
                       </span>
                     </label>
-                    <TrashSimpleIcon
-                      id={item._id}
-                      // onClick={() => deleteHabits(id)}
-                      weight="duotone"
-                    />
+                    <TrashSimpleIcon onClick={() => deleteHabits(item._id)} weight="duotone" />
                   </div>
                 </div>
               ))}

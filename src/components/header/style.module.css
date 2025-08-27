@@ -1,0 +1,15 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid var(--light);
+  padding-bottom: 10px;
+}
+.container h1 {
+  font-size: 25px;
+}
+
+.container span {
+  font-size: 10px;
+  font-weight: 200;
+}

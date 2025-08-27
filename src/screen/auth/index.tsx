@@ -6,7 +6,7 @@ import { useUser } from "../../hooks/use.user";
 export function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { getUserInfo, userData } = useUser();
+  const { getUserInfo } = useUser();
 
   async function handleAuth() {
     // espera a API mandar "code"

@@ -1,14 +1,17 @@
 import { ListChecksIcon, SignOutIcon, TimerIcon } from "@phosphor-icons/react";
 import style from "./style.module.css";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useUser } from "../../hooks/use.user";
+import clsx from "clsx";
 
 export function SideBar() {
   const { userData, logout } = useUser();
 
+  const { pathname } = useLocation();
+
+  console.log(pathname);
+
   const navigate = useNavigate();
-
-
 
   function handleLogout() {
     logout();
@@ -21,10 +24,10 @@ export function SideBar() {
       <img src={userData.avatarUrl} alt="img-perfil" />
       <div className={style.links}>
         <Link to={"/habitos"}>
-          <ListChecksIcon />
+          <ListChecksIcon className={clsx(pathname === "/habitos" && style.active)} />
         </Link>
-        <Link to={"/entrar"}>
-          <TimerIcon />
+        <Link to={"/foco"}>
+          <TimerIcon className={clsx(pathname === "/foco" && style.active)} />
         </Link>
       </div>
       <SignOutIcon onClick={handleLogout} className={style.signout} />

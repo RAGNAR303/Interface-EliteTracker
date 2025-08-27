@@ -23,15 +23,15 @@
   height: 100px;
 }
 
-.container .links svg {
-  fill: var(--white);
+.container .links a svg {
+  fill: var(--light);
   height: 40px;
   width: 40px;
   cursor: pointer;
   transition: 0.2s ease-in;
 }
 
-.container .links svg:hover {
+.container .links a svg:hover {
   fill: var(--info);
 }
 
@@ -44,4 +44,8 @@
 
 .signout:hover {
   fill: var(--error);
+}
+
+.container .links a svg.active {
+  fill: var(--white);
 }

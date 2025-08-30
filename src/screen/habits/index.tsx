@@ -1,14 +1,15 @@
 import { CheckCircleIcon, NotePencilIcon, TrashSimpleIcon } from "@phosphor-icons/react";
 import style from "./style.module.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../services/api";
 import dayjs from "dayjs";
 import { Header } from "../../components/header";
 import { Info } from "../../components/info";
 import { Calendar } from "@mantine/dates";
 import clsx from "clsx";
+import { FloatingIndicator, Indicator } from "@mantine/core";
 
-type Habits = {
+type Habit = {
   _id: string;
   name: string;
   completedDates: string[]; //array de datas
@@ -24,21 +25,42 @@ type HabitMetrics = {
 };
 
 export function Habits() {
-  const [habits, setHabits] = useState<Habits[]>([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [metrics, setMetrics] = useState<HabitMetrics>({} as HabitMetrics);
-  const [selectedHabit, setSelectHabit] = useState<Habits | null>(null);
+  const [selectedHabit, setSelectHabit] = useState<Habit | null>(null);
   const createHabits = useRef<HTMLInputElement>(null);
-
   // pega o dias atual
-  const today = dayjs().startOf("day").toISOString();
+  const today = dayjs().startOf("day");
 
-  async function handleSelectHabits(habit: Habits) {
+  const metricsInfo = useMemo(() => {
+    const numberOfMonthDays = today.endOf("month").get("date");
+    const numberOfDays = metrics?.completedDates ? metrics?.completedDates?.length : 0;
+    // Vai trazer o numero de dias concluidos , e comparar com dias que tem no mês exe: 10/31
+    const compltesDatesPerMonth = `${numberOfDays}/${numberOfMonthDays}`;
+    // vai calcular porcetagem dos  dias que foram concluidos
+    const compltesDatesPerCent = `${Math.round((numberOfDays / numberOfMonthDays) * 100)}%`;
+    // Retorna para faro para ser usada
+    return {
+      compltesDatesPerMonth,
+      compltesDatesPerCent,
+    };
+  }, [metrics]);
+
+  async function handleSelectHabits(habit: Habit) {
     setSelectHabit(habit);
-    console.log(habit);
+
+    const { data } = await api.get<HabitMetrics>(`/habits/${habit._id}/metrics`, {
+      params: {
+        date: today.toISOString(),
+      },
+    });
+    console.log(data);
+    setMetrics(data);
   }
 
+  // Tras da API os lista de Habitos registrados
   async function loadHabits() {
-    const { data } = await api.get<Habits[]>("/habits");
+    const { data } = await api.get<Habit[]>("/habits");
 
     setHabits(data);
   }
@@ -61,13 +83,17 @@ export function Habits() {
     }
   }
   // Marca e desmarcar com base no dias
-  async function handleToggle(id: string) {
-    await api.patch(`/habits/${id}/toggle`);
+  async function handleToggle(habit: Habit) {
+    await api.patch(`/habits/${habit._id}/toggle`);
     await loadHabits();
+    await handleSelectHabits(habit);
   }
   //  Deleta a habitos
   async function deleteHabits(id: string) {
     await api.delete(`/habits/${id}`);
+
+    setMetrics({} as HabitMetrics);
+    setSelectHabit(null);
     await loadHabits();
   }
 
@@ -77,7 +103,7 @@ export function Habits() {
         <Header title={"Hábitos diários"} />
         <section>
           <div className={style.input}>
-            <input type="text" ref={createHabits} placeholder="Digite aqui uma nova hábito..." />
+            <input type="text" ref={createHabits} placeholder="Digite aqui uma novo hábito..." />
             <NotePencilIcon onClick={handleSubmit} />
           </div>
           <div className={style.habits}>
@@ -94,8 +120,8 @@ export function Habits() {
                   <label>
                     <input
                       type="checkbox"
-                      checked={item.completedDates.some((item) => item === today)}
-                      onChange={() => handleToggle(item._id)}
+                      checked={item.completedDates.some((item) => item === today.toISOString())}
+                      onChange={() => handleToggle(item)}
                     />
                     <span className={style.check}>
                       <CheckCircleIcon className={style.checked} weight="fill" />
@@ -109,16 +135,39 @@ export function Habits() {
         </section>
       </div>
       <div>
-        <div className={style.metrics}>
-          <h2>Academia </h2>
-          <div className={style["info-group"]}>
-            <Info value={"23/31"} label={"Dias Concluidos"} />
-            <Info value={"78%"} label={"Porcetagem"} />
+        {selectedHabit && (
+          <div className={style.metrics}>
+            <h2>{selectedHabit.name} </h2>
+            <div className={style["info-group"]}>
+              <Info value={metricsInfo.compltesDatesPerMonth} label={"Dias Concluidos"} />
+              <Info value={metricsInfo.compltesDatesPerCent} label={"Porcentagem"} />
+            </div>
+            <div className={style["calender-container"]}>
+              <Calendar
+                className={style.m_30b26e33}
+                static
+                renderDay={(date) => {
+                  const day = dayjs(date).date();
+                  const isSameDate = metrics?.completedDates?.some((item) =>
+                    dayjs(item).isSame(dayjs(date)),
+                  );
+                  return (
+                    <Indicator
+                      size={10}
+                      // color="var(--info)"
+                      color="none"
+                      offset={-2}
+                      disabled={!isSameDate}
+                      className={clsx(style.day, isSameDate && style.incicator)}
+                    >
+                      <div >{day}</div>
+                    </Indicator>
+                  );
+                }}
+              />
+            </div>
           </div>
-          <div className={style["calender-container"]}>
-            <Calendar />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../../services/api";
 import dayjs from "dayjs";
 import { Header } from "../../components/header";
+import { Info } from "../../components/info";
+import { Calendar } from "@mantine/dates";
+import clsx from "clsx";
 
 type Habits = {
   _id: string;
@@ -14,12 +17,25 @@ type Habits = {
   updatedAt: string;
 };
 
+type HabitMetrics = {
+  _id: string;
+  name: string;
+  completedDates: string[];
+};
+
 export function Habits() {
   const [habits, setHabits] = useState<Habits[]>([]);
+  const [metrics, setMetrics] = useState<HabitMetrics>({} as HabitMetrics);
+  const [selectedHabit, setSelectHabit] = useState<Habits | null>(null);
   const createHabits = useRef<HTMLInputElement>(null);
 
   // pega o dias atual
   const today = dayjs().startOf("day").toISOString();
+
+  async function handleSelectHabits(habit: Habits) {
+    setSelectHabit(habit);
+    console.log(habit);
+  }
 
   async function loadHabits() {
     const { data } = await api.get<Habits[]>("/habits");
@@ -66,8 +82,14 @@ export function Habits() {
           </div>
           <div className={style.habits}>
             {habits.map((item) => (
-              <div key={item._id} className={style.habit}>
-                <p>{item.name}</p>
+              <div
+                key={item._id}
+                className={clsx(
+                  style.habit,
+                  item._id === selectedHabit?._id && style["habit-active"],
+                )}
+              >
+                <p onClick={() => handleSelectHabits(item)}>{item.name}</p>
                 <div className={style.action}>
                   <label>
                     <input
@@ -85,6 +107,18 @@ export function Habits() {
             ))}
           </div>
         </section>
+      </div>
+      <div>
+        <div className={style.metrics}>
+          <h2>Academia </h2>
+          <div className={style["info-group"]}>
+            <Info value={"23/31"} label={"Dias Concluidos"} />
+            <Info value={"78%"} label={"Porcetagem"} />
+          </div>
+          <div className={style["calender-container"]}>
+            <Calendar />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,23 @@
 import type { ComponentProps } from "react";
 import style from "./style.module.css";
+import clsx from "clsx";
 
+// tipagem em que as propriedades do button, mais adicionou "variant"
 
-// tipagem em que as propreadades que o botão ja recebe
+type ButtonProps = ComponentProps<"button"> & {
+  variant?: "info" | "error";
+};
 
-type ButtonProps = ComponentProps<"button">;
-
-export function Button({ children, ...props }: ButtonProps) {
+export function Button({ children, disabled, variant, ...props }: ButtonProps) {
   return (
-    <button {...props} className={style.container}>
+    <button
+      {...props}
+      className={clsx(
+        style.container,
+        variant === "error" && style.error,
+        disabled && style.disabled,
+      )}
+    >
       {children}
     </button>
   );

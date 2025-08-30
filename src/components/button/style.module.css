@@ -1,7 +1,7 @@
 .container {
   width: 80%;
   background-color: var(--info);
-  padding: 10px;
+  padding: 2px;
   border-radius: 5px;
   color: var(--white);
   font-size: 20px;
@@ -19,11 +19,26 @@
   transform: scale(1.02);
 }
 
-.container:active {
-  background-color: var(--info-active);
-}
 .container svg {
   width: 27px;
   height: 27px;
   margin-right: 5px;
+}
+
+.error {
+  background-color: var(--error);
+}
+
+.error:hover {
+  background-color: var(--error-hover);
+}
+
+.disabled {
+  background-color: var(--light);
+  cursor: not-allowed;
+}
+
+.disabled:hover {
+  background-color: var(--light);
+  transform: none;
 }

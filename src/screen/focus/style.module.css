@@ -126,8 +126,34 @@
 }
 
 .calender-container {
- 
   margin: 0 auto;
 }
 
+.calender {
+  background-color: var(--black-blue);
+  padding: 5px;
+  border-radius: 5px;
+}
 
+.day {
+  background-color: var(--dark-light-blue);
+  border-radius: 50px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.incicator {
+  background-color: var(--info);
+}
+
+.m_30b26e33 button {
+  margin: 1px;
+  border: 1px solid var(--light);
+}
+
+.m_30b26e33 button svg:hover {
+  background-color: var(--dark-light-blue);
+}

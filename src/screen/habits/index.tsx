@@ -1,4 +1,8 @@
-import { CheckCircleIcon, NotePencilIcon, TrashSimpleIcon } from "@phosphor-icons/react";
+import {
+  CheckCircleIcon,
+  NotePencilIcon,
+  TrashSimpleIcon,
+} from "@phosphor-icons/react";
 import style from "./style.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../services/api";
@@ -7,7 +11,7 @@ import { Header } from "../../components/header";
 import { Info } from "../../components/info";
 import { Calendar } from "@mantine/dates";
 import clsx from "clsx";
-import { FloatingIndicator, Indicator } from "@mantine/core";
+import { Indicator } from "@mantine/core";
 
 type Habit = {
   _id: string;
@@ -26,15 +30,20 @@ type HabitMetrics = {
 
 export function Habits() {
   const [habits, setHabits] = useState<Habit[]>([]);
+
   const [metrics, setMetrics] = useState<HabitMetrics>({} as HabitMetrics);
   const [selectedHabit, setSelectHabit] = useState<Habit | null>(null);
   const createHabits = useRef<HTMLInputElement>(null);
   // pega o dias atual
   const today = dayjs().startOf("day");
 
+  // Faz o calculo dos dias que foram marcados como concluido .
+
   const metricsInfo = useMemo(() => {
     const numberOfMonthDays = today.endOf("month").get("date");
-    const numberOfDays = metrics?.completedDates ? metrics?.completedDates?.length : 0;
+    const numberOfDays = metrics?.completedDates
+      ? metrics?.completedDates?.length
+      : 0;
     // Vai trazer o numero de dias concluidos , e comparar com dias que tem no mês exe: 10/31
     const compltesDatesPerMonth = `${numberOfDays}/${numberOfMonthDays}`;
     // vai calcular porcetagem dos  dias que foram concluidos
@@ -46,15 +55,20 @@ export function Habits() {
     };
   }, [metrics]);
 
-  async function handleSelectHabits(habit: Habit) {
+  async function handleSelectHabits(habit: Habit, currentMonth?: Date) {
     setSelectHabit(habit);
 
-    const { data } = await api.get<HabitMetrics>(`/habits/${habit._id}/metrics`, {
-      params: {
-        date: today.toISOString(),
+    const { data } = await api.get<HabitMetrics>(
+      `/habits/${habit._id}/metrics`,
+      {
+        params: {
+          date: currentMonth
+            ? currentMonth.toISOString()
+            : today.startOf("month").toISOString(),
+        },
       },
-    });
-    console.log(data);
+    );
+    console.log({ data });
     setMetrics(data);
   }
 
@@ -64,10 +78,6 @@ export function Habits() {
 
     setHabits(data);
   }
-  // rederiza o array de habitops que esta vindo do API
-  useEffect(() => {
-    loadHabits();
-  }, []);
 
   //Cria os Habitos na API
   async function handleSubmit() {
@@ -97,13 +107,29 @@ export function Habits() {
     await loadHabits();
   }
 
+  async function handleSelectMonth(date: string) {
+    if (!selectedHabit) return;
+
+    const parsedDate = dayjs(date).toDate();
+
+    await handleSelectHabits(selectedHabit, parsedDate);
+  }
+  // rederiza o array de habitops que esta vindo do API
+  useEffect(() => {
+    loadHabits();
+  }, []);
+
   return (
     <div className={style.container}>
       <div className={style.content}>
         <Header title={"Hábitos diários"} />
         <section>
           <div className={style.input}>
-            <input type="text" ref={createHabits} placeholder="Digite aqui uma novo hábito..." />
+            <input
+              type="text"
+              ref={createHabits}
+              placeholder="Digite aqui uma novo hábito..."
+            />
             <NotePencilIcon onClick={handleSubmit} />
           </div>
           <div className={style.habits}>
@@ -120,14 +146,22 @@ export function Habits() {
                   <label>
                     <input
                       type="checkbox"
-                      checked={item.completedDates.some((item) => item === today.toISOString())}
+                      checked={item.completedDates.some(
+                        (item) => item === today.toISOString(),
+                      )}
                       onChange={() => handleToggle(item)}
                     />
                     <span className={style.check}>
-                      <CheckCircleIcon className={style.checked} weight="fill" />
+                      <CheckCircleIcon
+                        className={style.checked}
+                        weight="fill"
+                      />
                     </span>
                   </label>
-                  <TrashSimpleIcon onClick={() => deleteHabits(item._id)} weight="duotone" />
+                  <TrashSimpleIcon
+                    onClick={() => deleteHabits(item._id)}
+                    weight="duotone"
+                  />
                 </div>
               </div>
             ))}
@@ -139,12 +173,21 @@ export function Habits() {
           <div className={style.metrics}>
             <h2>{selectedHabit.name} </h2>
             <div className={style["info-group"]}>
-              <Info value={metricsInfo.compltesDatesPerMonth} label={"Dias Concluidos"} />
-              <Info value={metricsInfo.compltesDatesPerCent} label={"Porcentagem"} />
+              <Info
+                value={metricsInfo.compltesDatesPerMonth}
+                label={"Dias Concluidos"}
+              />
+              <Info
+                value={metricsInfo.compltesDatesPerCent}
+                label={"Porcentagem"}
+              />
             </div>
             <div className={style["calender-container"]}>
               <Calendar
-                className={style.m_30b26e33}
+                className={style.calender}
+                onMonthSelect={handleSelectMonth}
+                onNextMonth={handleSelectMonth}
+                onPreviousMonth={handleSelectMonth}
                 static
                 renderDay={(date) => {
                   const day = dayjs(date).date();
@@ -153,14 +196,11 @@ export function Habits() {
                   );
                   return (
                     <Indicator
-                      size={10}
-                      // color="var(--info)"
                       color="none"
-                      offset={-2}
                       disabled={!isSameDate}
                       className={clsx(style.day, isSameDate && style.incicator)}
                     >
-                      <div >{day}</div>
+                      <div>{day}</div>
                     </Indicator>
                   );
                 }}

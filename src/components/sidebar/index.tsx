@@ -9,8 +9,6 @@ export function SideBar() {
 
   const { pathname } = useLocation();
 
-  console.log(pathname);
-
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -24,7 +22,9 @@ export function SideBar() {
       <img src={userData.avatarUrl} alt="img-perfil" />
       <div className={style.links}>
         <Link to={"/habitos"}>
-          <ListChecksIcon className={clsx(pathname === "/habitos" && style.active)} />
+          <ListChecksIcon
+            className={clsx(pathname === "/habitos" && style.active)}
+          />
         </Link>
         <Link to={"/foco"}>
           <TimerIcon className={clsx(pathname === "/foco" && style.active)} />

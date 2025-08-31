@@ -8,6 +8,8 @@ import dayjs from "dayjs";
 import { api } from "../../services/api";
 import { Info } from "../../components/info";
 import { Calendar } from "@mantine/dates";
+import { Indicator } from "@mantine/core";
+import clsx from "clsx";
 
 type Timers = {
   focus: number;
@@ -234,7 +236,26 @@ export function Focus() {
             <Info value={"78%"} label={"Porcetagem"} />
           </div>
           <div className={style["calender-container"]}>
-            <Calendar />
+            <Calendar
+              className={style.calender}
+              static
+              renderDay={(date) => {
+                const day = dayjs(date).date();
+                // const isSameDate = metrics?.completedDates?.some((item) =>
+                //   dayjs(item).isSame(dayjs(date)),
+                // );
+                return (
+                  <Indicator
+                    color="none"
+
+                    // disabled={!isSameDate}
+                    // className={clsx(style.day, isSameDate && style.incicator)}
+                  >
+                    <div>{day}</div>
+                  </Indicator>
+                );
+              }}
+            />
           </div>
         </div>
       </div>

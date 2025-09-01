@@ -118,9 +118,10 @@
 .info-group {
   display: flex;
   justify-content: center;
+  text-align: center;
   margin: 0 auto;
-  gap: 40px;
-  padding-bottom: 20px;
+  gap: 20px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--light);
   width: 100%;
 }
@@ -149,11 +150,13 @@
   background-color: var(--info);
 }
 
+.dayCurrent {
+  border: 1px solid var(--white);
+}
+
 .m_30b26e33 button {
   margin: 1px;
   border: 1px solid var(--light);
 }
 
-.m_30b26e33 button svg:hover {
-  background-color: var(--dark-light-blue);
-}
+

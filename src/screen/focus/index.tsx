@@ -1,7 +1,7 @@
 import { MinusSquareIcon, PlusSquareIcon } from "@phosphor-icons/react";
 import { Header } from "../../components/header";
 import style from "./style.module.css";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../../components/button";
 import { useTimer } from "react-timer-hook";
 import dayjs from "dayjs";
@@ -14,6 +14,20 @@ import clsx from "clsx";
 type Timers = {
   focus: number;
   rest: number;
+};
+
+type FocusMetrics = {
+  _id: [number, number, number];
+  count: number;
+};
+
+type FocusTime = {
+  _id: string;
+  timeFrom: string;
+  timeTo: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 const TimerState = {
@@ -36,6 +50,18 @@ export function Focus() {
   const [timers, setTimers] = useState<Timers>({ focus: 0, rest: 0 });
   const [timerState, setTimerState] = useState<TimerState>(TimerState.PAUSED);
   const [timeFrom, setTimeFrom] = useState<Date | null>(null);
+
+  const [focusMetrics, setFocusMetrics] = useState<FocusMetrics>(
+    {} as FocusMetrics,
+  );
+  const [focusTimes, setFocusTimes] = useState<FocusTime[]>([]);
+  const [currentMonth, setCurrentMonth] = useState<dayjs.Dayjs>(
+    dayjs().startOf("month"),
+  );
+  // recebe dias "setCurrentDate"  e manda "currentDate" que esta tipado para receber no formado de dia.
+  const [currentDate, setCurrentDate] = useState<dayjs.Dayjs>(
+    dayjs().startOf("day"),
+  );
 
   function addSeconds(date: Date, seconds: number) {
     const time = dayjs(date).add(seconds, "seconds");
@@ -170,6 +196,72 @@ export function Focus() {
     setTimerState(TimerState.FOCUS);
   }
 
+  async function loadFocusMetrics(currentMonth: string) {
+    const { data } = await api.get<FocusMetrics[]>("/focus-time/metrics", {
+      params: {
+        date: currentMonth,
+      },
+    });
+    console.log(data);
+
+    const [metrics] = data;
+
+    setFocusMetrics(metrics || ({} as FocusMetrics));
+  }
+  async function loadFocusTimes(currentDate: string) {
+    const { data } = await api.get<FocusTime[]>("/focus-time", {
+      params: {
+        date: currentDate,
+      },
+    });
+    console.log(data);
+    setFocusTimes(data);
+  }
+
+  //Calcula a quantidade de minutos que foi acumulado  no tempo de foco
+
+  const metricsInfo = useMemo(() => {
+    const timesMetric = focusTimes.map((item) => ({
+      timeFrom: dayjs(item.timeFrom),
+      timeTo: dayjs(item.timeTo),
+    }));
+
+    let totalTimeInMinutes = 0;
+
+    if (timesMetric.length) {
+      for (const { timeFrom, timeTo } of timesMetric) {
+        const diff = timeTo.diff(timeFrom, "minutes");
+
+        totalTimeInMinutes += diff;
+        console.log(diff);
+      }
+    }
+
+    return {
+      timesMetric,
+      totalTimeInMinutes,
+    };
+  }, [focusTimes]);
+
+  async function handleSelectMonth(date: string) {
+    setCurrentMonth(dayjs(date));
+    setCurrentDate(dayjs(date));
+  }
+
+  // Recebe o dias selecionado no calendario e manda pra useState "setCurrentDate"
+  async function handleSelectDay(date: string) {
+    console.log(date);
+    setCurrentDate(dayjs(date));
+  }
+
+  useEffect(() => {
+    loadFocusMetrics(currentMonth.toISOString());
+  }, [currentMonth]);
+
+  useEffect(() => {
+    loadFocusTimes(currentDate.toISOString());
+  }, [currentDate]);
+
   return (
     <div className={style.container}>
       <div className={style.content}>
@@ -257,15 +349,27 @@ export function Focus() {
       </div>
       <div>
         <div className={style.metrics}>
-          <h2>Academia </h2>
+          <h2>Estátisticas</h2>
           <div className={style["info-group"]}>
-            <Info value={"23/31"} label={"Dias Concluidos"} />
-            <Info value={"78%"} label={"Porcetagem"} />
+            <Info
+              value={String(focusMetrics.count || 0)}
+              label={"Ciclos Totais"}
+            />
+            <Info
+              value={`${metricsInfo.totalTimeInMinutes} min`}
+              label={"Tempo total de foco"}
+            />
           </div>
           <div className={style["calender-container"]}>
             <Calendar
+              getDayProps={(date) => ({
+                selected: dayjs(date).isSame(currentDate), // Função que reconhece o click no mause nos dias
+                onClick: () => handleSelectDay(date), // Manda para "handleSelectDay" a data clicada.
+              })}
+              onMonthSelect={handleSelectMonth}
+              onNextMonth={handleSelectMonth}
+              onPreviousMonth={handleSelectMonth}
               className={style.calender}
-              static
               renderDay={(date) => {
                 const day = dayjs(date).date();
                 // const isSameDate = metrics?.completedDates?.some((item) =>

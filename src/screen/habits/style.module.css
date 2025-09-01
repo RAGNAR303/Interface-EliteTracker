@@ -197,6 +197,10 @@
   background-color: var(--info);
 }
 
+.dayCurrent {
+  border: 1px solid var(--white);
+}
+
 .m_30b26e33 button {
   margin: 1px;
   border: 1px solid var(--light);

@@ -30,13 +30,12 @@ type HabitMetrics = {
 
 export function Habits() {
   const [habits, setHabits] = useState<Habit[]>([]);
-
   const [metrics, setMetrics] = useState<HabitMetrics>({} as HabitMetrics);
   const [selectedHabit, setSelectHabit] = useState<Habit | null>(null);
   const createHabits = useRef<HTMLInputElement>(null);
   // pega o dias atual
   const today = dayjs().startOf("day");
-
+  console.log({ today });
   // Faz o calculo dos dias que foram marcados como concluido .
 
   const metricsInfo = useMemo(() => {
@@ -45,13 +44,13 @@ export function Habits() {
       ? metrics?.completedDates?.length
       : 0;
     // Vai trazer o numero de dias concluidos , e comparar com dias que tem no mês exe: 10/31
-    const compltesDatesPerMonth = `${numberOfDays}/${numberOfMonthDays}`;
+    const completedDatesPerMonth = `${numberOfDays}/${numberOfMonthDays}`;
     // vai calcular porcetagem dos  dias que foram concluidos
-    const compltesDatesPerCent = `${Math.round((numberOfDays / numberOfMonthDays) * 100)}%`;
+    const completedDatesPercent = `${Math.round((numberOfDays / numberOfMonthDays) * 100)}%`;
     // Retorna para faro para ser usada
     return {
-      compltesDatesPerMonth,
-      compltesDatesPerCent,
+      completedDatesPerMonth,
+      completedDatesPercent,
     };
   }, [metrics]);
 
@@ -81,10 +80,10 @@ export function Habits() {
 
   //Cria os Habitos na API
   async function handleSubmit() {
-    const addhabit = createHabits.current?.value;
+    const newHabit = createHabits.current?.value;
     // Pega o valor do input , que e o Habitos criado
-    if (addhabit) {
-      await api.post("/habits", { name: addhabit });
+    if (newHabit) {
+      await api.post("/habits", { name: newHabit });
       await loadHabits();
     }
     // Zera o valor do input depois.
@@ -96,6 +95,7 @@ export function Habits() {
   async function handleToggle(habit: Habit) {
     await api.patch(`/habits/${habit._id}/toggle`);
     await loadHabits();
+
     await handleSelectHabits(habit);
   }
   //  Deleta a habitos
@@ -174,11 +174,11 @@ export function Habits() {
             <h2>{selectedHabit.name} </h2>
             <div className={style["info-group"]}>
               <Info
-                value={metricsInfo.compltesDatesPerMonth}
+                value={metricsInfo.completedDatesPerMonth}
                 label={"Dias Concluidos"}
               />
               <Info
-                value={metricsInfo.compltesDatesPerCent}
+                value={metricsInfo.completedDatesPercent}
                 label={"Porcentagem"}
               />
             </div>
@@ -194,11 +194,16 @@ export function Habits() {
                   const isSameDate = metrics?.completedDates?.some((item) =>
                     dayjs(item).isSame(dayjs(date)),
                   );
+                  const isToday = dayjs(date).isSame(dayjs(), "day");
                   return (
                     <Indicator
                       color="none"
                       disabled={!isSameDate}
-                      className={clsx(style.day, isSameDate && style.incicator)}
+                      className={clsx(
+                        style.day,
+                        isSameDate && style.incicator,
+                        isToday && style.dayCurrent,
+                      )}
                     >
                       <div>{day}</div>
                     </Indicator>

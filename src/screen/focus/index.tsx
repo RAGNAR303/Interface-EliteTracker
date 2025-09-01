@@ -108,7 +108,7 @@ export function Focus() {
       const currentValue = Number(focusInput.current?.value);
 
       if (focusInput.current) {
-        const value = currentValue - 5; // padrão valor acrecenta 5min
+        const value = currentValue <= 0 ? 0 : currentValue - 5; // padrão valor acrecenta 5min
         focusInput.current.value = String(value);
         setTimers((old) => ({
           ...old,
@@ -120,7 +120,7 @@ export function Focus() {
 
     const currentValue = Number(restInput.current?.value);
     if (restInput.current) {
-      const value = currentValue - 5;
+      const value = currentValue <= 0 ? 0 : currentValue - 5;
 
       restInput.current.value = String(value);
       setTimers((old) => ({
@@ -176,14 +176,36 @@ export function Focus() {
         <Header title={"Tempo de foco"} />
         <div className={style["input-group"]}>
           <div className={style.input}>
-            <PlusSquareIcon weight="bold" onClick={() => handleAddMinutes("focus")} />
-            <input ref={focusInput} type="number" placeholder="Tempo de foco" disabled />
-            <MinusSquareIcon weight="bold" onClick={() => handleMinusMinutes("focus")} />
+            <PlusSquareIcon
+              weight="bold"
+              onClick={() => handleAddMinutes("focus")}
+            />
+            <input
+              ref={focusInput}
+              type="number"
+              placeholder="Tempo de foco"
+              disabled
+            />
+            <MinusSquareIcon
+              weight="bold"
+              onClick={() => handleMinusMinutes("focus")}
+            />
           </div>
           <div className={style.input}>
-            <PlusSquareIcon weight="bold" onClick={() => handleAddMinutes("rest")} />
-            <input ref={restInput} type="number" placeholder="Tempo de descanso" disabled />
-            <MinusSquareIcon weight="bold" onClick={() => handleMinusMinutes("rest")} />
+            <PlusSquareIcon
+              weight="bold"
+              onClick={() => handleAddMinutes("rest")}
+            />
+            <input
+              ref={restInput}
+              type="number"
+              placeholder="Tempo de descanso"
+              disabled
+            />
+            <MinusSquareIcon
+              weight="bold"
+              onClick={() => handleMinusMinutes("rest")}
+            />
           </div>
         </div>
         <div className={style.timer}>
@@ -214,14 +236,19 @@ export function Focus() {
 
         <div className={style["button-group"]}>
           {timerState === TimerState.PAUSED && (
-            <Button onClick={handleFocus} disabled={timers.focus <= 0 || timers.rest <= 0}>
+            <Button
+              onClick={handleFocus}
+              disabled={timers.focus <= 0 || timers.rest <= 0}
+            >
               Começar
             </Button>
           )}
           {timerState === TimerState.FOCUS && (
             <Button onClick={handleRest}>Iniciar Descanso</Button>
           )}
-          {timerState === TimerState.REST && <Button onClick={handleResume}>Retomar</Button>}
+          {timerState === TimerState.REST && (
+            <Button onClick={handleResume}>Retomar</Button>
+          )}
 
           <Button onClick={handleCancel} variant={"error"}>
             Cancelar

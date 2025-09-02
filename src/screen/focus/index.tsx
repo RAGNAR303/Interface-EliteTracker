@@ -1,4 +1,8 @@
-import { MinusSquareIcon, PlusSquareIcon } from "@phosphor-icons/react";
+import {
+  MinusSquareIcon,
+  PlusSquareIcon,
+  TimerIcon,
+} from "@phosphor-icons/react";
 import { Header } from "../../components/header";
 import style from "./style.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -50,10 +54,8 @@ export function Focus() {
   const [timers, setTimers] = useState<Timers>({ focus: 0, rest: 0 });
   const [timerState, setTimerState] = useState<TimerState>(TimerState.PAUSED);
   const [timeFrom, setTimeFrom] = useState<Date | null>(null);
-
-  const [focusMetrics, setFocusMetrics] = useState<FocusMetrics>(
-    {} as FocusMetrics,
-  );
+  const [historical, setHistorical] = useState<FocusTime[]>([]);
+  const [focusMetrics, setFocusMetrics] = useState<FocusMetrics[]>([]);
   const [focusTimes, setFocusTimes] = useState<FocusTime[]>([]);
   const [currentMonth, setCurrentMonth] = useState<dayjs.Dayjs>(
     dayjs().startOf("month"),
@@ -128,7 +130,7 @@ export function Focus() {
       }));
     }
   }
-
+  // Diminui minutos no input
   function handleMinusMinutes(type: "focus" | "rest") {
     if (type === "focus") {
       const currentValue = Number(focusInput.current?.value);
@@ -204,9 +206,7 @@ export function Focus() {
     });
     console.log(data);
 
-    const [metrics] = data;
-
-    setFocusMetrics(metrics || ({} as FocusMetrics));
+    setFocusMetrics(data);
   }
   async function loadFocusTimes(currentDate: string) {
     const { data } = await api.get<FocusTime[]>("/focus-time", {
@@ -214,13 +214,32 @@ export function Focus() {
         date: currentDate,
       },
     });
-    console.log(data);
+    console.log({ data });
     setFocusTimes(data);
   }
+  console.log({ focusTimes });
+
+  // async function handleTimerHistorical(date: string) {
+  //   console.log({ date });
+  //   const { data } = await api.get<FocusTime[]>("/focus-time", {
+  //     params: {
+  //       date,
+  //     },
+  //   });
+  //   setHistorical(data);
+  //   console.log({ data });
+  // }
+  // console.log({ historical });
+  // const historicalInfo = useMemo(() => {
+  //   const from = historical.timeFrom
+
+  // }, [historical]);
+
+  
 
   //Calcula a quantidade de minutos que foi acumulado  no tempo de foco
 
-  const metricsInfo = useMemo(() => {
+  const metricsInfoByDay = useMemo(() => {
     const timesMetric = focusTimes.map((item) => ({
       timeFrom: dayjs(item.timeFrom),
       timeTo: dayjs(item.timeTo),
@@ -243,14 +262,31 @@ export function Focus() {
     };
   }, [focusTimes]);
 
+  const metricsInfoByMonth = useMemo(() => {
+    const completedDates: string[] = [];
+    let counter: number = 0;
+
+    if (focusMetrics.length) {
+      focusMetrics.forEach((item) => {
+        const date = dayjs(`${item._id[0]}-${item._id[1]}-${item._id[2]}`)
+          .startOf("day")
+          .toISOString();
+
+        completedDates.push(date);
+        counter += item.count;
+      });
+    }
+
+    return { completedDates, counter };
+  }, [focusMetrics]);
+
   async function handleSelectMonth(date: string) {
     setCurrentMonth(dayjs(date));
     setCurrentDate(dayjs(date));
   }
 
-  // Recebe o dias selecionado no calendario e manda pra useState "setCurrentDate"
+  // Recebe o dias selecionado no calendario e manda para useState "setCurrentDate"
   async function handleSelectDay(date: string) {
-    console.log(date);
     setCurrentDate(dayjs(date));
   }
 
@@ -352,14 +388,30 @@ export function Focus() {
           <h2>Estátisticas</h2>
           <div className={style["info-group"]}>
             <Info
-              value={String(focusMetrics.count || 0)}
+              value={String(metricsInfoByMonth.counter)}
               label={"Ciclos Totais"}
             />
             <Info
-              value={`${metricsInfo.totalTimeInMinutes} min`}
+              value={`${metricsInfoByDay.totalTimeInMinutes} min`}
               label={"Tempo total de foco"}
             />
           </div>
+          {/* <div className={style["content-Timer"]}>
+            <h4>{}</h4>
+            <div className={style.timeday}>
+              {Array(6)
+                .fill(1)
+                .map((_, index) => (
+                  <div className={style.timercalander}>
+                    <div key={index}>
+                      <TimerIcon />
+                      <p>13:00 - 13:30</p>
+                    </div>
+                    <p>{index}25 minutos</p>
+                  </div>
+                ))}
+            </div>
+          </div> */}
           <div className={style["calender-container"]}>
             <Calendar
               getDayProps={(date) => ({
@@ -372,15 +424,14 @@ export function Focus() {
               className={style.calender}
               renderDay={(date) => {
                 const day = dayjs(date).date();
-                // const isSameDate = metrics?.completedDates?.some((item) =>
-                //   dayjs(item).isSame(dayjs(date)),
-                // );
+                const isSameDate = metricsInfoByMonth.completedDates.some(
+                  (item) => dayjs(item).isSame(dayjs(date)),
+                );
                 return (
                   <Indicator
                     color="none"
-
-                    // disabled={!isSameDate}
-                    // className={clsx(style.day, isSameDate && style.incicator)}
+                    disabled={!isSameDate}
+                    className={clsx(style.day, isSameDate && style.incicator)}
                   >
                     <div>{day}</div>
                   </Indicator>
